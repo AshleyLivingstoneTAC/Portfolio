@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class TerrainFace
 {
-
+    ShapeGenerator sg;
     Mesh mesh;
     int resolution;
     Vector3 localUp;
     Vector3 axisA;
     Vector3 axisB;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public TerrainFace(Mesh mesh, int resolution, Vector3 localUp)
+    public TerrainFace(ShapeGenerator sg, Mesh mesh, int resolution, Vector3 localUp)
     {
+        this.sg = sg;
         this.mesh = mesh;
         this.resolution = resolution;
         this.localUp = localUp;
@@ -22,7 +23,7 @@ public class TerrainFace
     public void ConstructMesh()
     {
         Vector3[] vertices = new Vector3[resolution * resolution];
-        int[] triangles = new int[(resolution - 1 * resolution - 1) * 6];
+        int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6];
         int triIndex = 0;
         for (int y = 0; y < resolution; y++)
         {
@@ -30,8 +31,9 @@ public class TerrainFace
             {
                 int i = x + y * resolution;
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = localUp + (percent.x - .5f)* 2 * axisA + (percent.y - .5f) * 2 * axisB; 
-                vertices[i] = pointOnUnitCube;
+                Vector3 pointOnUnitCube = localUp + (percent.x - .5f)* 2 * axisA + (percent.y - .5f) * 2 * axisB;
+                Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
+                vertices[i] = sg.CalculatePointOnPlanet(pointOnUnitSphere);
                 
                 if(x != resolution - 1 && y != resolution - 1)
                 {
