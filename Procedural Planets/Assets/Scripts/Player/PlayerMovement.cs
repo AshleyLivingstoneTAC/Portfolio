@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
     public Vector3 pos;
     public float mass;
     public bool colliding;
+    public bool freeze;
     public PlanetList pl;
 
     public float force;
@@ -16,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public Vector3 camDistance;
     public Vector3 r;
     public float rMag;
-
+    public float time;
     public Vector3 distToP1;
     public Vector3 distToP2;
 
@@ -28,26 +29,42 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        
-         pos += MoveOnInput();
-        if (!colliding)
-        {
-            GravitationalPull();
-        }
-        rMag = r.magnitude;
-        transform.position = pos;
         pos = transform.position;
-        transform.rotation = Quaternion.Euler(r);
-        distToP1 = transform.position - pl.planets[0].transform.position;
-        distToP2 = transform.position - pl.planets[1].transform.position;
+        Debug.Log(pos);
+        time += Time.deltaTime;
+        if (time > 0.1f)
+            freeze = false;
+        if (!freeze)
+        {
 
-        if(distToP1.magnitude < distToP2.magnitude)
-        {
-            nearestPlanet = pl.planets[0];
-        }
-        if (distToP1.magnitude > distToP2.magnitude)
-        {
-            nearestPlanet = pl.planets[1];
+            pos += MoveOnInput();
+            Debug.Log(pos);
+            if (!colliding)
+            {
+                GravitationalPull();
+
+            }
+            rMag = r.magnitude;
+            
+            if(pos.x != float.NaN && pos.y != float.NaN && pos.z != float.NaN)
+            {
+                transform.position = pos;
+            }
+            
+            if (!freeze)
+            pos = transform.position;
+            transform.rotation = Quaternion.Euler(r);
+            distToP1 = transform.position - pl.planets[0].transform.position;
+            distToP2 = transform.position - pl.planets[1].transform.position;
+
+            if (distToP1.magnitude < distToP2.magnitude)
+            {
+                nearestPlanet = pl.planets[0];
+            }
+            if (distToP1.magnitude > distToP2.magnitude)
+            {
+                nearestPlanet = pl.planets[1];
+            }
         }
     }
 
@@ -74,6 +91,10 @@ public class PlayerMovement : MonoBehaviour
         {
             v3.y += 1;
         }
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            v3.y -= 1;
+        }
         if (Input.GetKey(KeyCode.P))
         {
             if (nearestPlanet = pl.planets[1])
@@ -87,10 +108,14 @@ public class PlayerMovement : MonoBehaviour
 
     public void GravitationalPull()
     {
-        
-        force = (fakeG * mass * nearestPlanet.mass) / r.sqrMagnitude;
-        pos -= r * force;
-        r = transform.position - nearestPlanet.transform.position;
+        if (!freeze)
+        {
+            force = (fakeG * mass * nearestPlanet.mass) / r.sqrMagnitude;
+            if(force != float.NaN && force != float.PositiveInfinity && force != float.NegativeInfinity)
+            pos -= r * force;
+            Debug.Log(force);
+            r = transform.position - nearestPlanet.transform.position;
+        }
         
     }
 
